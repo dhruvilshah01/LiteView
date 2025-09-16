@@ -2,7 +2,7 @@
 import sys
 
 ## Library imports
-from textual import on, log
+from textual import on, work
 from textual.app import App, ComposeResult
 from textual.widgets import Static, Header, Button, TextArea, DataTable
 from textual.containers import Container, Horizontal, VerticalScroll
@@ -63,8 +63,16 @@ class MainApp(App):
             ##set the schema
             table_tree.set_schema(node_expanded.id,schema)
     
+    @work
+    async def push_commit_screen(self):
+        if await self.push_screen_wait(CommitScreen()):
+            print("Commiting")
+            self.db.conn.commit()
+        else:
+            self.db.conn.rollback()
+
     @on(Button.Pressed, "#run-query")
-    def handle_run_query(self, event: Button.Pressed) -> None:
+    async def handle_run_query(self, event: Button.Pressed) -> None:
         # Get the query editor and the data
         text_area_widget = self.query_one("#query-editor", TextArea)
         data_table_widget = self.query_one("#data-view", QueryResultsWidget)
@@ -73,7 +81,7 @@ class MainApp(App):
         data = self.db.run_query(query_text)
         ## Not a select statment
         if(data == None):
-            self.push_screen(CommitScreen())
+            self.push_commit_screen()
             
         else:
             returned_data = data[0]

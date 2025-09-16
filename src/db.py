@@ -36,6 +36,7 @@ class DbClient:
         try:
             query_type = self.get_query_type(query)
             if(query_type == "other"):
+                cursor.execute(query)
                 return None
             else:
                 res = cursor.execute(query)
