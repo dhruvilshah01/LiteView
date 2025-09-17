@@ -13,6 +13,7 @@ from widgets.TableTree import TableTree
 from widgets.QueryArea import QueryAreaWidget
 from widgets.QueryResults import QueryResultsWidget
 from screens.commit_screen import CommitScreen
+from screens.explain_plan_screen import ExplainPlanScreen
 
 class MainApp(App):
     CSS_PATH = "grid_layout1.tcss"
@@ -70,6 +71,21 @@ class MainApp(App):
             self.db.conn.commit()
         else:
             self.db.conn.rollback()
+    
+
+    @on(Button.Pressed, "#analyze-query")
+    def handle_analyze_query(self) -> None:
+        text_area_widget = self.query_one("#query-editor", TextArea)
+        query_text = text_area_widget.text.strip()
+        data = self.db.explain_query(query_text)
+        if(data == None):
+            #Eventually push error screen here
+            return
+        else:
+            self.push_screen(ExplainPlanScreen(data))
+            print(data)
+
+        
 
     @on(Button.Pressed, "#run-query")
     async def handle_run_query(self, event: Button.Pressed) -> None:

@@ -46,8 +46,16 @@ class DbClient:
     
     def get_query_type(self,query:str) -> str:
         type = query.strip().split(" ")[0].lower()
-
-        if(type == "select"):
+        print("TYPE IS: ", type)
+        if(type.strip() == "select"):
             return "select"
         else:
             return "other"
+    
+    def explain_query(self,query: str):
+        cursor = self.conn.cursor()
+        try:
+            res = cursor.execute(f"EXPLAIN QUERY PLAN {query}")
+            return res.fetchall()
+        except:
+            return None
