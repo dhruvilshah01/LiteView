@@ -67,7 +67,6 @@ class MainApp(App):
     @work
     async def push_commit_screen(self):
         if await self.push_screen_wait(CommitScreen()):
-            print("Commiting")
             self.db.conn.commit()
         else:
             self.db.conn.rollback()
@@ -77,13 +76,12 @@ class MainApp(App):
     def handle_analyze_query(self) -> None:
         text_area_widget = self.query_one("#query-editor", TextArea)
         query_text = text_area_widget.text.strip()
-        data = self.db.explain_query(query_text)
-        if(data == None):
+        plan = self.db.explain_query(query_text)
+        if(plan == None):
             #Eventually push error screen here
             return
         else:
-            self.push_screen(ExplainPlanScreen(data))
-            print(data)
+            self.push_screen(ExplainPlanScreen(plan = plan, query_str=query_text))
 
         
 

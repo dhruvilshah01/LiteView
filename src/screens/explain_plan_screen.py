@@ -1,22 +1,40 @@
-from textual.app import ComposeResult, on
+from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Button, Static, Markdown
-from textual.containers import Vertical
+from textual.widgets import Button, Markdown, Static, Header, Footer
+from textual.containers import Vertical, Horizontal, Container
+
 
 class ExplainPlanScreen(Screen):
-      def __init__(self, plan, name = None, id = None, classes = None):
-         super().__init__(name, id, classes)
-         self.plan = plan
+    def __init__(self, plan, query_str, **kwargs):
+        super().__init__(**kwargs)
+        self.plan = plan
+        self.query_str = query_str
 
+    def compose(self) -> ComposeResult:
+        # Header with a title and clock
+        yield Header(show_clock=True)
 
-      def compose(self):
-        with Vertical():
-            # Markdown widget for nicely formatted EXPLAIN
-            yield Markdown(f"```sql\n{self.plan}\n```")
-            
-            # Done button to close the screen
-            yield Button("Done", id="done-btn")
+        with Vertical(id="explain-layout"):
+            yield Static(f"[b]Query[/b]\n[dim]{self.query_str}[/dim]", id="query-box")
+            yield Markdown(f"```sql\n{self.convert_plan(self.plan)}\n```", id="plan-box")
 
-      def on_button_pressed(self, event):
-        if event.button.id == "done-btn":
+            # Buttons at the bottom
+            with Horizontal(id="button-row"):
+                yield Button("⬅ Back", id="back-btn", variant="primary")
+                yield Button("Export Plan", id="export-btn", variant="success")
+
+        # Footer with key hints
+        yield Footer()
+
+    def on_button_pressed(self, event: Button.Pressed):
+        if event.button.id == "back-btn":
             self.app.pop_screen()
+        elif event.button.id == "export-btn":
+            with open("explain_plan.txt", "w") as f:
+                f.write(self.convert_plan(self.plan))
+            self.notify("Exported explain plan to explain_plan.txt")
+
+    def convert_plan(self, plan: list) -> str:
+        """Format the SQLite plan into a readable string."""
+        plans_arr = [p[3] for p in plan]
+        return "\n".join(plans_arr)
