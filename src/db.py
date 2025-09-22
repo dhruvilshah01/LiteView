@@ -34,17 +34,17 @@ class DbClient:
     def run_query(self, query:str):
         cursor = self.conn.cursor()
         try:
-            query_type = self.get_query_type(query)
-            if(query_type == "other"):
+            is_select = self.is_select(query)
+            if(not is_select):
                 cursor.execute(query)
                 return None
             else:
                 res = cursor.execute(query)
                 return [res.fetchall(), res.description]
-        except():
-            return "Error with SQL String"
+        except Exception as e:
+            return e
     
-    def get_query_type(self,query:str) -> str:
+    def is_select(self,query:str) -> bool:
         type = query.strip().split(" ")[0].lower()
         print("TYPE IS: ", type)
         if(type.strip() == "select"):
@@ -57,5 +57,5 @@ class DbClient:
         try:
             res = cursor.execute(f"EXPLAIN QUERY PLAN {query}")
             return res.fetchall()
-        except:
-            return None
+        except Exception as e:
+            return e

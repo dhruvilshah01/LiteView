@@ -14,6 +14,7 @@ from widgets.QueryArea import QueryAreaWidget
 from widgets.QueryResults import QueryResultsWidget
 from screens.commit_screen import CommitScreen
 from screens.explain_plan_screen import ExplainPlanScreen
+from screens.error_screen import ErrorScreen
 
 class MainApp(App):
     CSS_PATH = "grid_layout1.tcss"
@@ -77,9 +78,11 @@ class MainApp(App):
         text_area_widget = self.query_one("#query-editor", TextArea)
         query_text = text_area_widget.text.strip()
         plan = self.db.explain_query(query_text)
-        if(plan == None):
+        print(type(plan))
+        if isinstance(plan, Exception):
             #Eventually push error screen here
-            return
+            self.push_screen(ErrorScreen(error=plan))
+
         else:
             self.push_screen(ExplainPlanScreen(plan = plan, query_str=query_text))
 
@@ -96,7 +99,9 @@ class MainApp(App):
         ## Not a select statment
         if(data == None):
             self.push_commit_screen()
-            
+        ## Incorrect statement
+        elif isinstance(data,Exception):
+            self.push_screen(ErrorScreen(error=data))
         else:
             returned_data = data[0]
             column_names = tuple(map(lambda desc: str(desc[0]),data[1]))
