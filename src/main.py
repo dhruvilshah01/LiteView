@@ -4,8 +4,8 @@ import sys
 ## Library imports
 from textual import on, work
 from textual.app import App, ComposeResult
-from textual.widgets import Static, Header, Button, TextArea, DataTable
-from textual.containers import Container, Horizontal, VerticalScroll
+from textual.widgets import Header, Button, TextArea, DataTable
+from textual.containers import Container
 
 ## Self Imports
 from db import DbClient
@@ -14,11 +14,10 @@ from widgets.QueryArea import QueryAreaWidget
 from widgets.QueryResults import QueryResultsWidget
 from screens.commit_screen import CommitScreen
 from screens.explain_plan_screen import ExplainPlanScreen
-from screens.error_screen import ErrorScreen
 
 class MainApp(App):
-    CSS_PATH = "grid_layout1.tcss"
-
+    CSS_PATH = ["grid_layout1.tcss", "./widgets/query_area_layout.tcss", "./widgets/query_results.tcss", "./screens/explain_plan_screen.tcss"]
+    PAGE_SIZE = 100
     ## extend init to take in db_path
     def __init__(self, db_path, **kwargs):
         super().__init__(**kwargs)
@@ -31,7 +30,6 @@ class MainApp(App):
                 yield TableTree(label="Tables",id="table-view")
             yield QueryAreaWidget(id="query-area")
             yield QueryResultsWidget(id="data-view")
-        yield Button("Click me to quit", id="quit-button")
            
     
     def on_mount(self) -> None:
@@ -46,7 +44,6 @@ class MainApp(App):
 
     @on(TableTree.mount)
     def get_tables(self):
-        print("Getting Tables")
         tables = self.db.get_tables()
         table_tree = self.query_one(TableTree)
         table_tree.set_tables(tables)
@@ -80,43 +77,51 @@ class MainApp(App):
         plan = self.db.explain_query(query_text)
         print(type(plan))
         if isinstance(plan, Exception):
-            #Eventually push error screen here
-            self.push_screen(ErrorScreen(error=plan))
-
+            self.notify(f"SQL Error! \n {plan}\n", severity="error", timeout=5)
         else:
             self.push_screen(ExplainPlanScreen(plan = plan, query_str=query_text))
 
-        
-
     @on(Button.Pressed, "#run-query")
     async def handle_run_query(self, event: Button.Pressed) -> None:
-        # Get the query editor and the data
         text_area_widget = self.query_one("#query-editor", TextArea)
-        data_table_widget = self.query_one("#data-view", QueryResultsWidget)
-        # Get SQL String and run the query
+        query_results_widget = self.query_one("#data-view", QueryResultsWidget)
         query_text = text_area_widget.text.strip()
         data = self.db.run_query(query_text)
         ## Not a select statment
         if(data == None):
             self.push_commit_screen()
-        ## Incorrect statement
+        ## Incorrect statement, some error
         elif isinstance(data,Exception):
-            self.push_screen(ErrorScreen(error=data))
+            self.notify(f"SQL Error! \n {data}\n", severity="error", timeout=3)
         else:
-            returned_data = data[0]
-            column_names = tuple(map(lambda desc: str(desc[0]),data[1]))
-            #clear data_table and add columns and rows
-            data_table_widget.clear(columns=True)
-            data_table_widget.add_columns(*column_names)
-            data_table_widget.add_rows(returned_data)
-        
+            returned_data = data["data"]
+            column_names = tuple(map(lambda desc: str(desc[0]),data["desc"]))
+            if(not data["is_limit"]):
+                query_results_widget.display_pagination()
+                query_results_widget.page = 1
+                query_results_widget.query_str = query_text
+            else:
+                query_results_widget.undisplay_pagination()
+            query_results_widget.set_table(data = returned_data, columns = column_names, page_size = MainApp.PAGE_SIZE)
+
+    @on(Button.Pressed, "#next-page")
+    def handle_next_pagination(self) -> None: 
+         query_results_widget = self.query_one("#data-view", QueryResultsWidget)
+         query_results_widget.page += 1
+         data = self.db.run_query(query_results_widget.query_str, page = query_results_widget.page, page_size = MainApp.PAGE_SIZE)
+         returned_data = data['data']
+         column_names = tuple(map(lambda desc: str(desc[0]),data["desc"]))
+         query_results_widget.set_table(data = returned_data, columns = column_names, page_size = MainApp.PAGE_SIZE)
     
-
-def main():
-    print("Hello from liteview!")
-
-
-
+    @on(Button.Pressed, "#prev-page")
+    def handle_prev_pagination(self) -> None:
+         query_results_widget = self.query_one("#data-view", QueryResultsWidget)
+         query_results_widget.page -= 1
+         data = self.db.run_query(query_results_widget.query_str, page = query_results_widget.page, page_size = MainApp.PAGE_SIZE)
+         returned_data = data['data']
+         column_names = tuple(map(lambda desc: str(desc[0]),data["desc"]))
+         query_results_widget.set_table(data = returned_data, columns = column_names, page_size = MainApp.PAGE_SIZE)
+         
 if __name__ == "__main__":
     num_args = len(sys.argv)
     if(num_args == 2):

@@ -31,7 +31,7 @@ class DbClient:
         schema_columns = list(map(lambda column: column[1], table_schema_info))
         return [table_data, schema_columns]
 
-    def run_query(self, query:str):
+    def run_query(self, query:str, page=1, page_size=100):
         cursor = self.conn.cursor()
         try:
             is_select = self.is_select(query)
@@ -39,14 +39,17 @@ class DbClient:
                 cursor.execute(query)
                 return None
             else:
-                res = cursor.execute(query)
-                return [res.fetchall(), res.description]
+                #fetch an extra row
+                if ("limit" in query.lower()):
+                    res = cursor.execute(query)
+                    return {"data": res.fetchall(), "desc": res.description, "is_limit" : True}
+                res = cursor.execute(f"{query.strip().rstrip(";")} LIMIT {page_size + 1} OFFSET {(page - 1) * page_size};")
+                return {"data": res.fetchall(), "desc": res.description, "is_limit" : False}
         except Exception as e:
             return e
     
     def is_select(self,query:str) -> bool:
         type = query.strip().split(" ")[0].lower()
-        print("TYPE IS: ", type)
         if(type.strip() == "select"):
             return "select"
         else:

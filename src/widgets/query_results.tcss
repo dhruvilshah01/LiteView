@@ -1,0 +1,21 @@
+#query-results-container {
+    layout: grid;
+    grid-size: 1 2;
+    grid-rows: 4fr 1fr;
+}
+
+#pagination-controls {
+    height: 3;
+    align: center middle;
+    display: none;
+}
+
+#pagination-controls Button {
+    width: 10;
+    min-width: 8;
+}
+
+#page-label {
+    margin-top: 1;
+    padding: 0 2;
+}

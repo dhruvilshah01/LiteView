@@ -9,14 +9,19 @@ class ExplainPlanScreen(Screen):
         super().__init__(**kwargs)
         self.plan = plan
         self.query_str = query_str
+        print(plan)
 
     def compose(self) -> ComposeResult:
         # Header with a title and clock
-        yield Header(show_clock=True)
+        yield Header()
 
         with Vertical(id="explain-layout"):
-            yield Static(f"[b]Query[/b]\n[dim]{self.query_str}[/dim]", id="query-box")
-            yield Markdown(f"```sql\n{self.convert_plan(self.plan)}\n```", id="plan-box")
+            with Vertical(id="content-box"):
+                yield Static(f"Query:\n", id="query-box")
+                yield Static(self.query_str, id="query-str")
+                yield Static("\nQuery Plan:", id="query-plan-label")
+                yield Markdown(f"```sql\n{self.convert_plan(self.plan)}\n```", id="plan-box")
+
 
             # Buttons at the bottom
             with Horizontal(id="button-row"):
@@ -35,6 +40,5 @@ class ExplainPlanScreen(Screen):
             self.notify("Exported explain plan to explain_plan.txt")
 
     def convert_plan(self, plan: list) -> str:
-        """Format the SQLite plan into a readable string."""
         plans_arr = [p[3] for p in plan]
         return "\n".join(plans_arr)

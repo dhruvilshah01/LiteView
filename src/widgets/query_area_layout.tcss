@@ -1,0 +1,13 @@
+QueryAreaWidget {
+    layout: grid;
+    grid-size: 2 1;
+    grid-columns: 3fr 1fr;
+}
+
+#query-area-buttons{
+    align: center middle;
+}
+
+#analyze-query {
+    margin-top: 2;
+}

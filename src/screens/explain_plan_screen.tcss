@@ -1,0 +1,22 @@
+#query-box{
+    content-align: center middle;
+    text-style: bold;
+}
+
+#query-plan-label {
+    content-align: center middle;
+    text-style: bold;
+}
+
+#query-str {
+    content-align: center middle;
+    text-style: italic;
+}
+
+#button-row {
+    align: center middle;
+}
+
+#back-btn {
+    margin-right: 4
+}
