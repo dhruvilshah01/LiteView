@@ -49,11 +49,13 @@ class DbClient:
             return e
     
     def is_select(self,query:str) -> bool:
-        type = query.strip().split(" ")[0].lower()
-        if(type.strip() == "select"):
-            return "select"
+        type = query.strip().split(" ")[0].lower().strip()
+        if(type == "select"):
+            return True
+        elif(type == ""):
+            raise Exception("Empty Query")
         else:
-            return "other"
+            return False
     
     def explain_query(self,query: str):
         cursor = self.conn.cursor()

@@ -1,7 +1,7 @@
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import Button, Markdown, Static, Header, Footer
-from textual.containers import Vertical, Horizontal, Container
+from textual.containers import Vertical, VerticalScroll, Horizontal
 
 
 class ExplainPlanScreen(Screen):
@@ -12,24 +12,24 @@ class ExplainPlanScreen(Screen):
         print(plan)
 
     def compose(self) -> ComposeResult:
-        # Header with a title and clock
         yield Header()
 
         with Vertical(id="explain-layout"):
-            with Vertical(id="content-box"):
-                yield Static(f"Query:\n", id="query-box")
+            # Scrollable content
+            with VerticalScroll(id="content-box"):
+                yield Static("Query:", id="query-box")
                 yield Static(self.query_str, id="query-str")
                 yield Static("\nQuery Plan:", id="query-plan-label")
-                yield Markdown(f"```sql\n{self.convert_plan(self.plan)}\n```", id="plan-box")
+                yield Static(self.convert_plan(self.plan), id="plan-box")
 
-
-            # Buttons at the bottom
+            # Sticky buttons at bottom
             with Horizontal(id="button-row"):
                 yield Button("⬅ Back", id="back-btn", variant="primary")
-                yield Button("Export Plan", id="export-btn", variant="success")
+                yield Button("Export Plan", id="export-btn", variant="default")
 
-        # Footer with key hints
-        yield Footer()
+            yield Footer()
+
+      
 
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == "back-btn":
@@ -40,5 +40,6 @@ class ExplainPlanScreen(Screen):
             self.notify("Exported explain plan to explain_plan.txt")
 
     def convert_plan(self, plan: list) -> str:
-        plans_arr = [p[3] for p in plan]
+        plans_arr = [f"{i + 1}. {plan[i][3]}" for i in range(len(plan))]
+        print("\n".join(plans_arr))
         return "\n".join(plans_arr)

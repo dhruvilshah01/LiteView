@@ -1,9 +1,16 @@
-#query-box{
-    content-align: center middle;
-    text-style: bold;
+#explain-layout {
+    height: 100%;
 }
 
-#query-plan-label {
+#content-box {
+    height: 1fr
+}
+
+#plan-box {
+    content-align: center middle;
+}
+
+#query-box, #query-plan-label {
     content-align: center middle;
     text-style: bold;
 }
@@ -14,9 +21,17 @@
 }
 
 #button-row {
+    height: auto;
     align: center middle;
+    background: $primary;
+    padding: 1;
 }
 
 #back-btn {
-    margin-right: 4
+    margin-right: 2;
+    background: $secondary;
+}
+
+#export-btn {
+    background: $foreground;
 }
