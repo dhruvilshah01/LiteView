@@ -14,5 +14,4 @@ class TableTree(Tree):
     def set_schema(self, node_id: int, schema: list) -> None:
         table_node = self.get_node_by_id(node_id)
         for column in schema:
-            print("Columns of tables", column)
             table_node.add_leaf(f"{column[0]} - {column[1]}")

@@ -1,0 +1,19 @@
+#confirm-transaction-label{
+    margin-top: 4;
+    content-align: center middle;
+}
+
+#btn-holders{
+    align: center middle;
+}
+
+#rollback-btn{
+    content-align: center middle;
+    margin-right: 4;
+    background: $primary;
+}
+
+#commit-btn {
+    content-align: center middle;
+    background: $secondary;
+}

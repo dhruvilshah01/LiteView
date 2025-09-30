@@ -22,7 +22,6 @@ class ExplainPlanScreen(Screen):
                 yield Static("\nQuery Plan:", id="query-plan-label")
                 yield Static(self.convert_plan(self.plan), id="plan-box")
 
-            # Sticky buttons at bottom
             with Horizontal(id="button-row"):
                 yield Button("⬅ Back", id="back-btn", variant="primary")
                 yield Button("Export Plan", id="export-btn", variant="default")

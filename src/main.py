@@ -16,7 +16,8 @@ from screens.commit_screen import CommitScreen
 from screens.explain_plan_screen import ExplainPlanScreen
 
 class MainApp(App):
-    CSS_PATH = ["grid_layout1.tcss", "./widgets/query_area_layout.tcss", "./widgets/query_results.tcss", "./screens/explain_plan_screen.tcss"]
+    CSS_PATH = ["grid_layout1.tcss", "./widgets/query_area_layout.tcss", "./widgets/query_results.tcss", 
+                "./screens/explain_plan_screen.tcss", "./screens/commit_screen.tcss"]
     PAGE_SIZE = 100
     ## extend init to take in db_path
     def __init__(self, db_path, **kwargs):
